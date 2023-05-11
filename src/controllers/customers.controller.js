@@ -36,10 +36,15 @@ export async function createCustomersController (req,res){
 }
 export async function updateCustomersByIDController (req,res){
     try {
+        const { name, phone, cpf, birthday } = req.body
         const { id } = req.params
-        console.log(id)
-        // const customers =  await db.query(`SELECT name FROM customers WHERE cpf=$1;`, [cpf])
-        res.send(id)
+        const cpfInfo =  await db.query(`SELECT cpf FROM customers WHERE cpf=$1 and id<>$2;`, [cpf, id])
+        const cpfExists = cpfInfo.rowCount > 0
+        if(cpfExists){
+            return res.status(409).send()
+        } 
+        await db.query(`UPDATE customers SET name=$1,phone=$2,cpf=$3,birthday=$4 WHERE id=$5;`, [name, phone, cpf, birthday,id])
+        res.send("passou")
     } catch (e) {
         res.status(400).send(e)
         
