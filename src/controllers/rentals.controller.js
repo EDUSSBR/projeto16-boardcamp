@@ -1,8 +1,29 @@
 import db from '../database/db.js'
 export async function getRentalsController(req, res) {
     try {
-        const rentals = await db.query(`select * from rentals;`)
-        res.send(rentals.rows)
+        // const rentals = await db.query(`SELECT * FROM rentals JOIN customers ON rentals."customerId"=customers.id JOIN games ON games.id=rentals."gameId";`)
+        const rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" FROM rentals r  JOIN customers c ON r."customerId"=c.id JOIN games g ON g.id=r."gameId";`)
+        const mappedRentals = rentals.rows.map(item=>{
+            return {
+                id:item.id,
+                customerId:item.customerId,
+                gameId:item.gameId,
+                rentDate:item.rentDate,
+                daysRented:item.daysRented,
+                returnDate:item.returnDate,
+                originalPrice:item.originalPrice,
+                delayFee:item.delayFee,
+                customer: {
+                    id:item.customerId,
+                    name: item.customerName
+                },
+                game: {
+                    id: item.gameId,
+                    name: item.gameName
+                }
+            }
+        })
+        res.send(mappedRentals)
     } catch (e) {
         res.status(500).send({ error: "Problemas no servidor." })
     }
