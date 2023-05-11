@@ -1,7 +1,7 @@
 import { Router } from "express"
-import { gameRouter } from "./games.route"
-import { customerRouter } from "./customers.route"
-import { rentalsRouter } from "./rentals.route"
+import { gameRouter } from "./games.route.js"
+import { customerRouter } from "./customers.route.js"
+import { rentalsRouter } from "./rentals.route.js"
 
 const route = Router()
 
