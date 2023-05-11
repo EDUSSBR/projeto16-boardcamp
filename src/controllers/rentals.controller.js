@@ -1,29 +1,30 @@
+import db from '../database/db.js'
+export async function getRentalsController(req, res) {
+    try {
+        const rentals = await db.query(`select * from rentals;`)
+        res.send(rentals.rows)
+    } catch (e) {
+        res.status(500).send({ error: "Problemas no servidor." })
+    }
+}
+export async function createRentalsController(req, res) {
+    try {
 
-export function getRentalsController (req,res){
-    try {
-        
     } catch (e) {
-        
+
     }
 }
-export function createRentalsController (req,res){
+export async function finishRentalController(req, res) {
     try {
-        
+
     } catch (e) {
-        
+
     }
 }
-export function finishRentalController (req,res){
+export async function deleteRentalController(req, res) {
     try {
-        
+
     } catch (e) {
-        
-    }
-}
-export function deleteRentalController (req,res){
-    try {
-        
-    } catch (e) {
-        
+
     }
 }
