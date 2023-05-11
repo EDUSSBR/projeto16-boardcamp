@@ -45,17 +45,15 @@ export async function finishRentalController(req, res) {
         if (isFinished) {
             return res.status(400).send()
         }
-        console.log("passou dessas")
         const oldRentDate = new Date(rentals?.rows[0]?.rentDate)
         const daysRented = rentals?.rows[0]?.daysRented
         const originalPrice = rentals?.rows[0]?.originalPrice 
 
-        const hadGameForHowManyDays = Math.ceil((Date.now()-oldRentDate) / (1000 * 60 * 60 * 24))
+        const hadGameForHowManyDays = Math.floor((Date.now()-oldRentDate) / (1000 * 60 * 60 * 24))
         let delayFee = (hadGameForHowManyDays - daysRented) * (originalPrice / daysRented) 
         if (delayFee<0){
             delayFee=0
         }
-        console.log(returnDate, delayFee, id)
         await db.query(`UPDATE rentals SET "returnDate"=$1,"delayFee"=$2 WHERE id=$3;`, [returnDate, delayFee, id])
         res.send()
     } catch (e) {
