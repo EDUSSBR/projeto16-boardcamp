@@ -1,17 +1,18 @@
+import db from '../database/db.js'
 
-
-export function getGamesController (req,res){
+export async function getGamesController(req, res) {
     try {
-        
+        const games = await db.query(`select * from games;`)
+        res.send(games.rows)
     } catch (e) {
-        
+        res.status(500).send({ error: "Problemas no servidor."})
     }
 }
-export function createGamesController (req,res){
+export async function createGamesController(req, res) {
     try {
-        
+
     } catch (e) {
-        
+
     }
 }
 
