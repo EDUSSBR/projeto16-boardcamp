@@ -61,13 +61,24 @@ export async function finishRentalController(req, res) {
     } catch (e) {
         
         res.status(400).send(e)
-
+        
     }
 }
 export async function deleteRentalController(req, res) {
     try {
-
+        const { id } = req.params
+        const rentals = await db.query(`SELECT "returnDate" FROM rentals WHERE id=$1;`, [id])
+        const rentalsExists = rentals?.rowCount > 0
+        if (!rentalsExists) {
+            return res.status(404).send()
+        }
+        const alreadyReturned = rentals?.rows[0]?.returnDate !== null
+        if (!alreadyReturned){
+            return res.status(400).send()
+        }
+        await db.query(`DELETE FROM rentals WHERE id=$1;`, [id])
+        res.send()
     } catch (e) {
-
+        res.status(400).send(e)
     }
 }
