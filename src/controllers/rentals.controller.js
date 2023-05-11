@@ -21,7 +21,7 @@ export async function createRentalsController(req, res) {
         const gameExists = gameInfo?.rowCount > 0
         const customerExists = customerInfo?.rowCount > 0
         const gamesInStock = Number(rentalsCount?.rows[0]?.count) < gameInfo?.rows[0]?.stockTotal
-        if ( !gameExists || !customerExists || !gamesInStock ) {
+        if (!gameExists || !customerExists || !gamesInStock) {
             return res.status(400).send()
         }
         const originalPrice = gameInfo.rows[0].pricePerDay * daysRented
@@ -34,8 +34,33 @@ export async function createRentalsController(req, res) {
 }
 export async function finishRentalController(req, res) {
     try {
+        const { id } = req.params
+        const returnDate = new Date().toISOString().slice(0, 10);
+        const rentals = await db.query(`SELECT * FROM rentals WHERE id=$1;`, [id])
+        const rentalsExists = rentals?.rowCount > 0
+        if (!rentalsExists) {
+            return res.status(404).send()
+        }
+        const isFinished = rentals.rows[0].returnDate !== null
+        if (isFinished) {
+            return res.status(400).send()
+        }
+        console.log("passou dessas")
+        const oldRentDate = new Date(rentals?.rows[0]?.rentDate)
+        const daysRented = rentals?.rows[0]?.daysRented
+        const originalPrice = rentals?.rows[0]?.originalPrice 
 
+        const hadGameForHowManyDays = Math.ceil((Date.now()-oldRentDate) / (1000 * 60 * 60 * 24))
+        let delayFee = (hadGameForHowManyDays - daysRented) * (originalPrice / daysRented) 
+        if (delayFee<0){
+            delayFee=0
+        }
+        console.log(returnDate, delayFee, id)
+        await db.query(`UPDATE rentals SET "returnDate"=$1,"delayFee"=$2 WHERE id=$3;`, [returnDate, delayFee, id])
+        res.send()
     } catch (e) {
+        
+        res.status(400).send(e)
 
     }
 }
