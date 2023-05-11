@@ -16,9 +16,17 @@ export async function getCustomersByIDController (req,res){
 }
 export async function createCustomersController (req,res){
     try {
+        const { name, phone, cpf, birthday } = req.body
         
+        const customers =  await db.query(`SELECT name FROM customers WHERE cpf=$1;`, [cpf])
+        if (customers.rowCount>0){
+            return res.status(409).send()
+        }
+        await db.query(`INSERT INTO customers (name, phone, cpf, birthday ) VALUES ($1, $2, $3, $4);`, [name, phone, cpf, birthday ])
+        res.status(201).send()
     } catch (e) {
-        
+        console.log(e)
+        res.status(400).send()
     }
 }
 export async function updateCustomersByIDController (req,res){
