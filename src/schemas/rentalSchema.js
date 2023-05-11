@@ -1,4 +1,4 @@
-const Joi = require('joi');
+import Joi from 'joi';
 
 export const rentalSchema = Joi.object({
   id: Joi.number().integer().positive().optional(),
