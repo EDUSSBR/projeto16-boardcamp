@@ -1,16 +1,22 @@
 import db from '../database/db.js'
 export async function getRentalsController(req, res) {
     try {
-        const { customerId: queryCustomerID } = req.query
+        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit } = req.query
         let rentals;
-        if (queryCustomerID){
+        queryCustomerID = queryCustomerID || "";
+        queryGameID = queryGameID || "";
+        offset = Number(offset) || 0;
+        limit = limit || null;
+        if (queryGameID || queryCustomerID || offset || limit) {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
             JOIN games g ON g.id=r."gameId"
-            WHERE c.id=$1
-            ;`,[queryCustomerID])
-        } else{
+            WHERE c.id=$1 OR g.id=$2
+            OFFSET $3
+            LIMIT $4
+            ;`, [queryCustomerID, queryGameID, offset, limit])
+        } else {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
