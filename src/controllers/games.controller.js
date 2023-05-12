@@ -2,12 +2,17 @@ import db from '../database/db.js'
 
 export async function getGamesController(req, res) {
     try {
-        const { name } = req.query
+        let { name, offset, limit } = req.query
         let games;
-        if (name){
-            games = await db.query(`SELECT * FROM games WHERE name ILIKE $1||'%';`,[name])
+        name = name || "";
+        offset = Number(offset) || 0;
+        limit = limit || null;
+
+        console.log("name",name, "offset", offset, "limit", limit)
+        if (name || offset || limit) {
+            games = await db.query(`SELECT * FROM games WHERE name ILIKE $1||'%' OFFSET $2 LIMIT $3;`, [name, offset, limit])
         } else {
-            games =await db.query(`SELECT * FROM games;`)
+            games = await db.query(`SELECT * FROM games;`)
         }
         res.send(games.rows)
     } catch (e) {
