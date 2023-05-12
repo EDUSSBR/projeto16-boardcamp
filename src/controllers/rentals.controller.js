@@ -3,8 +3,8 @@ export async function getRentalsController(req, res) {
     try {
         let { customerId: queryCustomerID, gameId: queryGameID, offset, limit } = req.query
         let rentals;
-        queryCustomerID = queryCustomerID || "";
-        queryGameID = queryGameID || "";
+        queryCustomerID = queryCustomerID || null;
+        queryGameID = queryGameID || null;
         offset = Number(offset) || 0;
         limit = limit || null;
         if (queryGameID || queryCustomerID || offset || limit) {
@@ -44,6 +44,7 @@ export async function getRentalsController(req, res) {
         })
         res.send(mappedRentals)
     } catch (e) {
+        console.log(e)
         res.status(500).send({ error: "Problemas no servidor." })
     }
 }
