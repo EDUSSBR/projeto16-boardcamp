@@ -1,7 +1,13 @@
 import db from '../database/db.js'
 export async function getCustomersController (req,res){
     try {
-        const customers = await db.query(`select * from customers;`)
+        const { cpf } = req.query
+        let customers;
+        if (cpf){
+            customers = await db.query(`SELECT * FROM customers WHERE cpf LIKE $1||'%';`,[cpf])
+        } else {
+            customers =await db.query(`SELECT * FROM customers;`)
+        }
         res.send(customers.rows)
     } catch (e) {
         res.status(500).send({ error: "Problemas no servidor."})
