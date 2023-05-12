@@ -2,15 +2,19 @@ import db from '../database/db.js'
 
 export async function getGamesController(req, res) {
     try {
-        let { name, offset, limit } = req.query
+        let { name, offset, limit, order, desc } = req.query
+        const gameColumns = ['id', 'name', 'image', 'stockTotal', 'pricePerDay'];
         let games;
         name = name || "";
         offset = Number(offset) || 0;
         limit = limit || null;
-
-        console.log("name",name, "offset", offset, "limit", limit)
-        if (name || offset || limit) {
-            games = await db.query(`SELECT * FROM games WHERE name ILIKE $1||'%' OFFSET $2 LIMIT $3;`, [name, offset, limit])
+        const gameColumnExists = gameColumns.some(item => item === order)
+        if (name || offset || limit || gameColumnExists || desc === "DESC") {
+            let query = `SELECT * FROM games WHERE name ILIKE $1||'%' OFFSET $2 LIMIT $3;`
+            if (gameColumnExists) {
+                query += ` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
+            }
+            games = await db.query(query, [name, offset, limit])
         } else {
             games = await db.query(`SELECT * FROM games;`)
         }
