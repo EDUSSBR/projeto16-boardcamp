@@ -1,21 +1,27 @@
 import db from '../database/db.js'
 export async function getRentalsController(req, res) {
     try {
-        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit } = req.query
+        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc } = req.query
         let rentals;
+        const rentalColumns = ['id','customerId', 'rentDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
         queryCustomerID = queryCustomerID || null;
         queryGameID = queryGameID || null;
         offset = Number(offset) || 0;
         limit = limit || null;
-        if (queryGameID || queryCustomerID || offset || limit) {
-            rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
+        const orderedColumnExists = rentalColumns.some(item=>item===order)
+        if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || desc==="DESC") {
+            let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
             JOIN games g ON g.id=r."gameId"
             WHERE c.id=$1 OR g.id=$2
             OFFSET $3
             LIMIT $4
-            ;`, [queryCustomerID, queryGameID, offset, limit])
+            ;`
+            if (orderedColumnExists){
+                query+=` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
+            }
+            rentals = await db.query(query, [queryCustomerID, queryGameID, offset, limit])
         } else {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
