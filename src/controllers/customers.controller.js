@@ -1,10 +1,18 @@
 import db from '../database/db.js'
 export async function getCustomersController (req,res){
     try {
-        const { cpf } = req.query
+        let { cpf, limit, offset } = req.query
+        cpf = cpf || "";
+        offset = offset || 0;
+        limit = Number(limit) || null;
         let customers;
-        if (cpf){
-            customers = await db.query(`SELECT * FROM customers WHERE cpf LIKE $1||'%';`,[cpf])
+        if (cpf || offset || limit){
+            customers = await db.query(`
+            SELECT * FROM customers 
+            WHERE cpf LIKE $1||'%'
+            OFFSET $2
+            LIMIT $3
+            ;`,[cpf, offset, limit])
         } else {
             customers =await db.query(`SELECT * FROM customers;`)
         }
