@@ -1,27 +1,41 @@
 import db from '../database/db.js'
 export async function getRentalsController(req, res) {
     try {
-        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc } = req.query
+        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc, status } = req.query
         let rentals;
-        const rentalColumns = ['id','customerId', 'rentDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
+        const rentalColumns = ['id', 'customerId', 'rentDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
         queryCustomerID = queryCustomerID || null;
         queryGameID = queryGameID || null;
         offset = Number(offset) || 0;
         limit = limit || null;
-        const orderedColumnExists = rentalColumns.some(item=>item===order)
-        if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || desc==="DESC") {
+        const thereIsNoStatus = status !== 'open' && status !== 'closed';
+        status = thereIsNoStatus ? null : status;
+        const orderedColumnExists = rentalColumns.some(item => item === order)
+        if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || !thereIsNoStatus || desc === "DESC") {
             let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
             JOIN games g ON g.id=r."gameId"
-            WHERE c.id=$1 OR g.id=$2
+            WHERE COALESCE(c.id = $1, TRUE) 
+            AND COALESCE(g.id = $2, TRUE) 
+            AND (CASE $5
+                WHEN 'open' THEN r."returnDate" IS NULL
+                WHEN 'closed' THEN r."returnDate" IS NOT NULL
+                ELSE TRUE
+              END)
             OFFSET $3
             LIMIT $4
-            ;`
-            if (orderedColumnExists){
-                query+=` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
+            `
+            if (orderedColumnExists) {
+                query += ` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
             }
-            rentals = await db.query(query, [queryCustomerID, queryGameID, offset, limit])
+            query += ';'
+            rentals = await db.query(query, [
+                queryCustomerID,
+                queryGameID,
+                offset,
+                limit,
+                status])
         } else {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
