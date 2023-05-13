@@ -24,7 +24,8 @@ export async function getCustomersController(req, res) {
         } else {
             customers = await db.query(`SELECT * FROM customers;`)
         }
-        res.send(customers.rows)
+        console.log(customers.rows)
+        res.send(customers.rows.map(item=> ({...item, birthday: item.birthday.toISOString().slice(0, 10)})))
     } catch (e) {
         res.status(500).send({ error: "Problemas no servidor." })
     }
@@ -36,6 +37,8 @@ export async function getCustomersByIDController(req, res) {
         if (customers.rowCount === 0) {
             return res.status(404).send()
         }
+        customers.rows[0].birthday=customers.rows[0].birthday.toISOString().slice(0, 10)
+
         res.send(customers.rows[0])
     } catch (e) {
         res.status(400).send()
