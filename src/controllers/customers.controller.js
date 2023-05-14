@@ -9,7 +9,7 @@ export async function getCustomersController(req, res) {
         let customers;
         const customersColumnIndex = customersColumns.indexOf(order)
         order = customersColumnIndex === -1 ? 'id' : customersColumns[customersColumnIndex]
-        desc = desc === true ? 'DESC' : 'ASC'
+        desc = desc === 'true' ? 'DESC' : 'ASC'
         if (cpf || offset || limit || customersColumnIndex || desc === "DESC") {
             let query = `
             SELECT * FROM customers 
