@@ -3,7 +3,7 @@ export async function getRentalsController(req, res) {
     try {
         let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc, status } = req.query
         let rentals;
-        const orderedColumns = ['id', 'customerId', 'rentDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
+        const orderedColumns = ['id', 'customerId', 'startDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
         queryCustomerID = queryCustomerID || null;
         queryGameID = queryGameID || null;
         offset = Number(offset) || 0;
@@ -12,7 +12,7 @@ export async function getRentalsController(req, res) {
         status = thereIsNoStatus ? null : status;
         const orderedColumnsIndex = orderedColumns.indexOf(order)
         const orderedColumnExists = orderedColumnsIndex !== -1 
-        order = orderedColumnsIndex === -1 ? 'id' : orderedColumns[orderedColumnsIndex]
+        order = orderedColumnsIndex === -1 ? null : orderedColumns[orderedColumnsIndex]=== 'startDate' ? 'rentDate' : orderedColumns[orderedColumnsIndex]
         desc = desc === 'true' ? 'DESC' : 'ASC'
         if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || !thereIsNoStatus || desc === "DESC") {
             let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
@@ -26,7 +26,7 @@ export async function getRentalsController(req, res) {
                 WHEN 'closed' THEN r."returnDate" IS NOT NULL
                 ELSE TRUE
               END)
-            ORDER BY quote_ident(${order}) ${desc}
+            ORDER BY COALESCE(quote_ident(${order}), 'id') ${desc}
             OFFSET $3
             LIMIT $4
             `

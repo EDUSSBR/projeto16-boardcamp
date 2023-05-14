@@ -8,13 +8,14 @@ export async function getCustomersController(req, res) {
         limit = Number(limit) || null;
         let customers;
         const customersColumnIndex = customersColumns.indexOf(order)
-        order = customersColumnIndex === -1 ? 'id' : customersColumns[customersColumnIndex]
+        order = customersColumnIndex === -1 ? null : customersColumns[customersColumnIndex]
         desc = desc === 'true' ? 'DESC' : 'ASC'
+        console.log(order, desc)
         if (cpf || offset || limit || customersColumnIndex || desc === "DESC") {
             let query = `
             SELECT * FROM customers 
             WHERE cpf LIKE $1||'%'
-            ORDER BY quote_ident(${order}) ${desc}
+            ORDER BY COALESCE(quote_ident(${order}), 'id') ${desc}
             OFFSET $2
             LIMIT $3
             ;`
