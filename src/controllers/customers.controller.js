@@ -2,7 +2,7 @@ import db from '../database/db.js'
 export async function getCustomersController(req, res) {
     try {
         let { cpf, limit, offset, order, desc } = req.query
-        const customersColumns = ['id', 'name', 'phone', 'cpf', 'birthday'];
+        const customersColumns = ['name', 'phone', 'cpf', 'birthday'];
         cpf = cpf || "";
         offset = offset || 0;
         limit = Number(limit) || null;

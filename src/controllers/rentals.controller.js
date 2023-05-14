@@ -3,7 +3,7 @@ export async function getRentalsController(req, res) {
     try {
         let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc, status } = req.query
         let rentals;
-        const orderedColumns = ['id', 'customerId', 'startDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
+        const orderedColumns = ['customerId', 'startDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
         queryCustomerID = queryCustomerID || null;
         queryGameID = queryGameID || null;
         offset = Number(offset) || 0;

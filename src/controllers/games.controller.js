@@ -3,7 +3,7 @@ import db from '../database/db.js'
 export async function getGamesController(req, res) {
     try {
         let { name, offset, limit, order, desc } = req.query
-        const gameColumns = ['id', 'name', 'image', 'stockTotal', 'pricePerDay'];
+        const gameColumns = [ 'name', 'image', 'stockTotal', 'pricePerDay'];
         let games;
         name = name || "";
         offset = Number(offset) || 0;
