@@ -8,17 +8,17 @@ export async function getCustomersController(req, res) {
         limit = Number(limit) || null;
         let customers;
         const customersColumnIndex = customersColumns.indexOf(order)
-        order = customersColumnIndex === -1 ? null : customersColumns[customersColumnIndex]
-        desc = desc === 'true' ? 'DESC' : 'ASC'
-        console.log(order, desc)
-        if (cpf || offset || limit || customersColumnIndex || desc === "DESC") {
+        const orderForQuery = customersColumnIndex === -1 ? null : customersColumns[customersColumnIndex]
+        if (cpf || offset || limit || order !== undefined) {
             let query = `
             SELECT * FROM customers 
             WHERE cpf LIKE $1||'%'
-            ORDER BY COALESCE(quote_ident(${order}), 'id') ${desc}
+            ORDER BY COALESCE(${orderForQuery}, id) ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $2
             LIMIT $3
             ;`
+
+            console.log(query)
             customers = await db.query(query, [cpf, offset, limit])
 
 

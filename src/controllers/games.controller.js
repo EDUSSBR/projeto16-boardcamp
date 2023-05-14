@@ -10,11 +10,11 @@ export async function getGamesController(req, res) {
         limit = limit || null;
         const gameColumnIndex = gameColumns.indexOf(order)
         order = gameColumnIndex === -1 ? null : gameColumns[gameColumnIndex]
-        desc = desc === 'true' ? 'DESC' : 'ASC'
-        if (name || offset || limit || gameColumnIndex !== -1 || desc === "DESC") {
+        if (name || offset || limit || order!==undefined ) {
             let query = `SELECT * FROM games WHERE name ILIKE $1||'%'
-            ORDER BY COALESCE(quote_ident(${order}), 'id') ${desc}
+            ORDER BY COALESCE(${order}, id) ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $2 LIMIT $3;`
+            console.log(query)
             games = await db.query(query, [name, offset, limit])
         } else {
             games = await db.query(`SELECT * FROM games;`)

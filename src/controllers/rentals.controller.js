@@ -11,10 +11,9 @@ export async function getRentalsController(req, res) {
         const thereIsNoStatus = status !== 'open' && status !== 'closed';
         status = thereIsNoStatus ? null : status;
         const orderedColumnsIndex = orderedColumns.indexOf(order)
-        const orderedColumnExists = orderedColumnsIndex !== -1 
-        order = orderedColumnsIndex === -1 ? null : orderedColumns[orderedColumnsIndex]=== 'startDate' ? 'rentDate' : orderedColumns[orderedColumnsIndex]
-        desc = desc === 'true' ? 'DESC' : 'ASC'
-        if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || !thereIsNoStatus || desc === "DESC") {
+        
+        const orderForQuery = orderedColumnsIndex === -1 ? null : orderedColumns[orderedColumnsIndex]=== 'startDate' ? 'rentDate' : orderedColumns[orderedColumnsIndex]
+        if (queryGameID || queryCustomerID || offset || limit|| order!==undefined || !thereIsNoStatus) {
             let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
@@ -26,7 +25,7 @@ export async function getRentalsController(req, res) {
                 WHEN 'closed' THEN r."returnDate" IS NOT NULL
                 ELSE TRUE
               END)
-            ORDER BY COALESCE(quote_ident(${order}), 'id') ${desc}
+            ORDER BY COALESCE(quote_ident(${orderForQuery}), id) ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $3
             LIMIT $4
             `
