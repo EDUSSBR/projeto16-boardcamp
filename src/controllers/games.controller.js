@@ -8,12 +8,13 @@ export async function getGamesController(req, res) {
         name = name || "";
         offset = Number(offset) || 0;
         limit = limit || null;
-        const gameColumnExists = gameColumns.some(item => item === order)
-        if (name || offset || limit || gameColumnExists || desc === "DESC") {
-            let query = `SELECT * FROM games WHERE name ILIKE $1||'%' OFFSET $2 LIMIT $3;`
-            if (gameColumnExists) {
-                query += ` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
-            }
+        const gameColumnIndex = gameColumns.indexOf(order)
+        order = gameColumnIndex === -1 ? 'id' : gameColumns[gameColumnIndex]
+        desc = desc === true ? 'DESC' : 'ASC'
+        if (name || offset || limit || gameColumnIndex !== -1 || desc === "DESC") {
+            let query = `SELECT * FROM games WHERE name ILIKE $1||'%'
+            ORDER BY ${order} ${desc}
+            OFFSET $2 LIMIT $3;`
             games = await db.query(query, [name, offset, limit])
         } else {
             games = await db.query(`SELECT * FROM games;`)
