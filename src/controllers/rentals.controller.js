@@ -1,36 +1,44 @@
 import db from '../database/db.js'
 export async function getRentalsController(req, res) {
     try {
-        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc, status } = req.query
+        let { customerId: queryCustomerID, gameId: queryGameID, offset, limit, order, desc, startDate, status } = req.query
         let rentals;
-        const orderedColumns = ['customerId','gameId', 'startDate', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
+        const orderedColumns = ['customerId', 'rentDate', 'gameId', 'daysRented', 'returnDate', 'originalPrice', 'delayFee'];
         queryCustomerID = queryCustomerID || null;
         queryGameID = queryGameID || null;
         offset = Number(offset) || 0;
         limit = limit || null;
         const thereIsNoStatus = status !== 'open' && status !== 'closed';
         status = thereIsNoStatus ? null : status;
+        startDate = startDate || null
         const orderedColumnsIndex = orderedColumns.indexOf(order)
-        let orderForQuery = orderedColumnsIndex === -1 ? null : 
-        orderedColumns[orderedColumnsIndex]=== 'startDate' ?  'rentDate' : 
-        orderedColumns[orderedColumnsIndex]=== 'customerId' ?  'c.id' : 
-        orderedColumns[orderedColumnsIndex]=== 'gameId' ?  'g.id' : 
-        orderedColumns[orderedColumnsIndex]
-        
-        console.log(orderForQuery)
-        if (queryGameID || queryCustomerID || offset || limit|| order!==undefined || !thereIsNoStatus) {
+        let orderForQuery = orderedColumnsIndex === -1 ? null :
+            // orderedColumns[orderedColumnsIndex]=== 'startDate' ?  '"rentDate">' : 
+            orderedColumns[orderedColumnsIndex] === 'rentDate' ? '"rentDate"' :
+            orderedColumns[orderedColumnsIndex] === 'daysRented' ? '"daysRented"' :
+            orderedColumns[orderedColumnsIndex] === 'returnDate' ? '"returnDate"' :
+            orderedColumns[orderedColumnsIndex] === 'originalPrice' ? '"originalPrice"' :
+            orderedColumns[orderedColumnsIndex] === 'delayFee' ? '"delayFee"' :
+            orderedColumns[orderedColumnsIndex] === 'customerId' ? 'c.id' :
+            orderedColumns[orderedColumnsIndex] === 'gameId' ? 'g.id' :
+            orderedColumns[orderedColumnsIndex]
+
+        console.log(startDate)
+        console.log(orderedColumnsIndex)
+        if (queryGameID || startDate || queryCustomerID || offset || limit || order !== undefined || !thereIsNoStatus) {
             let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
             JOIN customers c ON r."customerId"=c.id 
             JOIN games g ON g.id=r."gameId"
             WHERE COALESCE(c.id = $1, TRUE) 
             AND COALESCE(g.id = $2, TRUE) 
+            AND COALESCE(r."rentDate" >= $6, TRUE) 
             AND (CASE $5
                 WHEN 'open' THEN r."returnDate" IS NULL
                 WHEN 'closed' THEN r."returnDate" IS NOT NULL
                 ELSE TRUE
               END)
-            ORDER BY ${'"'+orderForQuery+'"' || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
+            ORDER BY ${orderForQuery || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $3
             LIMIT $4
             ;`
@@ -39,7 +47,8 @@ export async function getRentalsController(req, res) {
                 queryGameID,
                 offset,
                 limit,
-                status])
+                status,
+                startDate])
         } else {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
