@@ -10,7 +10,7 @@ export async function getGamesController(req, res) {
         limit = limit || null;
         const gameColumnIndex = gameColumns.indexOf(order)
         order = gameColumnIndex === -1 ? 'id' : gameColumns[gameColumnIndex]
-        desc = desc === true ? 'DESC' : 'ASC'
+        desc = desc === 'true' ? 'DESC' : 'ASC'
         if (name || offset || limit || gameColumnIndex !== -1 || desc === "DESC") {
             let query = `SELECT * FROM games WHERE name ILIKE $1||'%'
             ORDER BY ${order} ${desc}

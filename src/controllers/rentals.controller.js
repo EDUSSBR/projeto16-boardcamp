@@ -13,7 +13,7 @@ export async function getRentalsController(req, res) {
         const orderedColumnsIndex = orderedColumns.indexOf(order)
         const orderedColumnExists = orderedColumnsIndex !== -1 
         order = orderedColumnsIndex === -1 ? 'id' : orderedColumns[orderedColumnsIndex]
-        desc = desc === true ? 'DESC' : 'ASC'
+        desc = desc === 'true' ? 'DESC' : 'ASC'
         if (queryGameID || queryCustomerID || offset || limit || orderedColumnExists || !thereIsNoStatus || desc === "DESC") {
             let query = `SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
