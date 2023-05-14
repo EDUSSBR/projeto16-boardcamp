@@ -7,17 +7,17 @@ export async function getCustomersController(req, res) {
         offset = offset || 0;
         limit = Number(limit) || null;
         let customers;
-        const customersColumnExists = customersColumns.some(item => item === order)
-        if (cpf || offset || limit || customersColumnExists || desc === "DESC") {
+        const customersColumnIndex = customersColumns.indexOf(order)
+        order = customersColumnIndex === -1 ? 'id' : customersColumns[customersColumnIndex]
+        desc = desc === true ? 'DESC' : 'ASC'
+        if (cpf || offset || limit || customersColumnIndex || desc === "DESC") {
             let query = `
             SELECT * FROM customers 
             WHERE cpf LIKE $1||'%'
+            ORDER BY ${order} ${desc}
             OFFSET $2
             LIMIT $3
             ;`
-            if (customersColumnExists){
-                query+=` ORDER BY ${order} ${desc === "true" ? "DESC" : "ASC"}`
-            }
             customers = await db.query(query, [cpf, offset, limit])
 
 
@@ -25,8 +25,9 @@ export async function getCustomersController(req, res) {
             customers = await db.query(`SELECT * FROM customers;`)
         }
         console.log(customers.rows)
-        res.send(customers.rows.map(item=> ({...item, birthday: item.birthday.toISOString().slice(0, 10)})))
+        res.send(customers.rows.map(item => ({ ...item, birthday: item.birthday.toISOString().slice(0, 10) })))
     } catch (e) {
+        console.log(e)
         res.status(500).send({ error: "Problemas no servidor." })
     }
 }
@@ -37,7 +38,7 @@ export async function getCustomersByIDController(req, res) {
         if (customers.rowCount === 0) {
             return res.status(404).send()
         }
-        customers.rows[0].birthday=customers.rows[0].birthday.toISOString().slice(0, 10)
+        customers.rows[0].birthday = customers.rows[0].birthday.toISOString().slice(0, 10)
 
         res.send(customers.rows[0])
     } catch (e) {
