@@ -13,7 +13,7 @@ export async function getCustomersController(req, res) {
             let query = `
             SELECT * FROM customers 
             WHERE cpf LIKE $1||'%'
-            ORDER BY COALESCE(${orderForQuery}, id) ${desc === 'true' ? 'DESC' : 'ASC'}
+            ORDER BY ${orderForQuery || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $2
             LIMIT $3
             ;`
