@@ -30,7 +30,7 @@ export async function getRentalsController(req, res) {
                 WHEN 'closed' THEN r."returnDate" IS NOT NULL
                 ELSE TRUE
               END)
-            ORDER BY ${orderForQuery || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
+            ORDER BY ${'"'+orderForQuery+'"' || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $3
             LIMIT $4
             ;`

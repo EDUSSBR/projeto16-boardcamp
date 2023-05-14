@@ -13,7 +13,7 @@ export async function getGamesController(req, res) {
         console.log(orderForQuery)
         if (name || offset || limit || order!==undefined ) {
             let query = `SELECT * FROM games WHERE name ILIKE $1||'%'
-            ORDER BY ${orderForQuery || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
+            ORDER BY ${'"'+orderForQuery+'"' || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $2 LIMIT $3;`
             console.log(query)
             games = await db.query(query, [name, offset, limit])
