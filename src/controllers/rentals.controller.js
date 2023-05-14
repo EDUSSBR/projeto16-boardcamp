@@ -26,7 +26,7 @@ export async function getRentalsController(req, res) {
                 WHEN 'closed' THEN r."returnDate" IS NOT NULL
                 ELSE TRUE
               END)
-            ORDER BY ${order} ${desc}
+            ORDER BY quote_ident($6) ${desc}
             OFFSET $3
             LIMIT $4
             `
@@ -39,7 +39,8 @@ export async function getRentalsController(req, res) {
                 queryGameID,
                 offset,
                 limit,
-                status])
+                status,
+                order])
         } else {
             rentals = await db.query(`SELECT r.id, r."customerId", r."gameId", r."rentDate", r."daysRented", r."returnDate", r."originalPrice", r."delayFee", c.name AS "customerName", g.name AS "gameName" 
             FROM rentals r  
