@@ -14,17 +14,16 @@ export async function getCustomersController(req, res) {
             let query = `
             SELECT * FROM customers 
             WHERE cpf LIKE $1||'%'
-            ORDER BY quote_ident($4) ${desc}
+            ORDER BY quote_ident(${order}) ${desc}
             OFFSET $2
             LIMIT $3
             ;`
-            customers = await db.query(query, [cpf, offset, limit, order])
+            customers = await db.query(query, [cpf, offset, limit])
 
 
         } else {
             customers = await db.query(`SELECT * FROM customers;`)
         }
-        console.log(customers.rows)
         res.send(customers.rows.map(item => ({ ...item, birthday: item.birthday.toISOString().slice(0, 10) })))
     } catch (e) {
         console.log(e)
