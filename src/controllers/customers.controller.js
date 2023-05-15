@@ -1,14 +1,14 @@
-import db from '../database/db.js'
+import db from '../database/db.js';
 export async function getCustomersController(req, res) {
     try {
-        let { cpf, limit, offset, order, desc } = req.query
+        let { cpf, limit, offset, order, desc } = req.query;
         const customersColumns = ['name', 'phone', 'cpf', 'birthday'];
         cpf = cpf || "";
         offset = offset || 0;
         limit = Number(limit) || null;
         let customers;
-        const customersColumnIndex = customersColumns.indexOf(order)
-        const orderForQuery = customersColumnIndex === -1 ? null : customersColumns[customersColumnIndex]
+        const customersColumnIndex = customersColumns.indexOf(order);
+        const orderForQuery = customersColumnIndex === -1 ? null : customersColumns[customersColumnIndex];
         if (cpf || offset || limit || order !== undefined) {
             let query = `
             SELECT * FROM customers 
@@ -16,63 +16,63 @@ export async function getCustomersController(req, res) {
             ORDER BY ${orderForQuery || 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
             OFFSET $2
             LIMIT $3
-            ;`
+            ;`;
 
-            console.log(query)
-            customers = await db.query(query, [cpf, offset, limit])
+            console.log(query);
+            customers = await db.query(query, [cpf, offset, limit]);
 
 
         } else {
-            customers = await db.query(`SELECT * FROM customers;`)
+            customers = await db.query(`SELECT * FROM customers;`);
         }
-        res.send(customers.rows.map(item => ({ ...item, birthday: item.birthday.toISOString().slice(0, 10) })))
+        res.send(customers.rows.map(item => ({ ...item, birthday: item.birthday.toISOString().slice(0, 10) })));
     } catch (e) {
-        console.log(e)
-        res.status(500).send({ error: "Problemas no servidor." })
+        console.log(e);
+        res.status(500).send({ error: "Problemas no servidor." });
     }
 }
 export async function getCustomersByIDController(req, res) {
     try {
-        const { id } = req.params
-        const customers = await db.query(`SELECT * FROM customers WHERE id=$1;`, [id])
+        const { id } = req.params;
+        const customers = await db.query(`SELECT * FROM customers WHERE id=$1;`, [id]);
         if (customers.rowCount === 0) {
-            return res.status(404).send()
+            return res.status(404).send();
         }
-        customers.rows[0].birthday = customers.rows[0].birthday.toISOString().slice(0, 10)
+        customers.rows[0].birthday = customers.rows[0].birthday.toISOString().slice(0, 10);
 
-        res.send(customers.rows[0])
+        res.send(customers.rows[0]);
     } catch (e) {
-        res.status(400).send()
+        res.status(400).send();
     }
 }
 export async function createCustomersController(req, res) {
     try {
-        const { name, phone, cpf, birthday } = req.body
+        const { name, phone, cpf, birthday } = req.body;
 
-        const customers = await db.query(`SELECT name FROM customers WHERE cpf=$1;`, [cpf])
+        const customers = await db.query(`SELECT name FROM customers WHERE cpf=$1;`, [cpf]);
         if (customers.rowCount > 0) {
-            return res.status(409).send()
+            return res.status(409).send();
         }
-        await db.query(`INSERT INTO customers (name, phone, cpf, birthday ) VALUES ($1, $2, $3, $4);`, [name, phone, cpf, birthday])
-        res.status(201).send()
+        await db.query(`INSERT INTO customers (name, phone, cpf, birthday ) VALUES ($1, $2, $3, $4);`, [name, phone, cpf, birthday]);
+        res.status(201).send();
     } catch (e) {
-        console.log(e)
-        res.status(400).send()
+        console.log(e);
+        res.status(400).send();
     }
 }
 export async function updateCustomersByIDController(req, res) {
     try {
-        const { name, phone, cpf, birthday } = req.body
-        const { id } = req.params
-        const cpfInfo = await db.query(`SELECT cpf FROM customers WHERE cpf=$1 and id<>$2;`, [cpf, id])
-        const cpfExists = cpfInfo.rowCount > 0
+        const { name, phone, cpf, birthday } = req.body;
+        const { id } = req.params;
+        const cpfInfo = await db.query(`SELECT cpf FROM customers WHERE cpf=$1 and id<>$2;`, [cpf, id]);
+        const cpfExists = cpfInfo.rowCount > 0;
         if (cpfExists) {
-            return res.status(409).send()
+            return res.status(409).send();
         }
-        await db.query(`UPDATE customers SET name=$1,phone=$2,cpf=$3,birthday=$4 WHERE id=$5;`, [name, phone, cpf, birthday, id])
-        res.send("passou")
+        await db.query(`UPDATE customers SET name=$1,phone=$2,cpf=$3,birthday=$4 WHERE id=$5;`, [name, phone, cpf, birthday, id]);
+        res.send("passou");
     } catch (e) {
-        res.status(400).send(e)
+        res.status(400).send(e);
 
     }
 }

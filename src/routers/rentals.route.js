@@ -3,11 +3,11 @@ import { getRentalsController,createRentalsController , finishRentalController, 
 import { validateSchema } from '../middlewares/validateSchema.js';
 import { rentalSchema } from '../schemas/rentalSchema.js';
 
-const rentalsRouter = Router()
+const rentalsRouter = Router();
 
-rentalsRouter.get('/rentals', getRentalsController)
-rentalsRouter.post('/rentals', validateSchema(rentalSchema), createRentalsController)
-rentalsRouter.post('/rentals/:id/return', finishRentalController)
-rentalsRouter.delete('/rentals/:id', deleteRentalController)
+rentalsRouter.get('/rentals', getRentalsController);
+rentalsRouter.post('/rentals', validateSchema(rentalSchema), createRentalsController);
+rentalsRouter.post('/rentals/:id/return', finishRentalController);
+rentalsRouter.delete('/rentals/:id', deleteRentalController);
 
 export { rentalsRouter };
